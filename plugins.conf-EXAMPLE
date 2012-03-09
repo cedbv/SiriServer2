@@ -2,6 +2,33 @@
 #
 # The order in which they appear defines the order in which they are queried for responses to speech
 # The plugin must be in the plugins folder
+# Do not add the .py ending here
 
-
+weather
+notes
+alarmPlugin
+timerPlugin
+timePlugin
+traduction
+definition
+tvBelgium
+annuaire
+lotto
+phonecalls
+location
+railtime
 examplePlugin
+danstonchat
+viedemerde
+displaypicture
+imdbPlugin
+wikipedia
+wwwsearch
+facebook
+twitter
+frenchtalk
+smalltalk
+serverinfo
+startRequestHandler
+wolfram
+chatbot
