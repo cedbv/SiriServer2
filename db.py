@@ -29,14 +29,14 @@ def getConnection():
 class Assistant(object):
     def __init__(self):
         self.assistantId = None
-        self.speechId= None    
+        self.speechId= None
         self.censorSpeech = None
         self.timeZoneId = None
         self.language = None
         self.region = None
         self.nickName = u''
         self.firstName=u''
-
+        self.accountIdentifier = None
 
 def adaptAssistant(assistant):
     return cPickle.dumps(assistant)

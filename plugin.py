@@ -17,7 +17,7 @@ from siriObjects.systemObjects import GetRequestOrigin, SetRequestOrigin
 __criteria_key__ = "criterias"
 
 
-__error_responses__ = {"de-DE": "Es ist ein Fehler in der Verarbeitung ihrer Anfrage aufgetreten!", "en-US": "There was an error during the processing of your request!", "en-GB": "There was an error during the processing of your request!", "en-AU": "There was an error during the processing of your request!", "fr-FR": "Il y avait une erreur lors du traitement de votre demande!"}
+__error_responses__ = {"de-DE": "Es ist ein Fehler in der Verarbeitung ihrer Anfrage aufgetreten!", "en-US": "There was an error during the processing of your request!", "en-GB": "There was an error during the processing of your request!", "en-AU": "There was an error during the processing of your request!", "fr-FR": "Il y a eu une erreur lors du traitement de votre demande !"}
 
 __error_location_help__ = {"de-DE": u"Ich weiß nicht wo du bist… Aber du kannst mir helfen es heraus zu finden…", "en-US": u"I don’t know where you are… But you can help me find out…", "en-GB": u"I don’t know where you are… But you can help me find out…", "en-AU": u"I don’t know where you are… But you can help me find out…", "fr-FR": u"Je ne sais pas où vous êtes ... Mais vous pouvez m'aider à en savoir plus sur ..."}
 
@@ -76,7 +76,7 @@ class Plugin(threading.Thread):
         self.location = None
         self.logger = logging.getLogger("logger")
         self.__priority = False
-    
+
     def initialize(self, method, speech, language, send_object, send_plist, assistant, location):
         super(Plugin, self).__init__()
         self.__method = method
@@ -125,31 +125,31 @@ class Plugin(threading.Thread):
                 if self.location.status != None and self.location.status != SetRequestOrigin.statusValid:
                     # urgs... we are fucked no location here, there is a status
                     # tell the other end that it fucked up and should enable location service
-                    
+
                     #We need to say something
                     view1 = AssistantUtteranceView(text=__error_location_help__[self.__lang], speakableText=__error_location_help__[self.__lang], dialogIdentifier="Common#assistantLocationServicesDisabled")
-                    
+
                     #lets create another which has tells him to open settings
                     view2 = AssistantUtteranceView(text=__error_location_saysettings__[self.__lang], speakableText=__error_location_saysettings__[self.__lang], dialogIdentifier="Common#assistantLocationServicesDisabled")
-                    
+
                     # create a button which opens the location tab in the settings if clicked on it
                     button = Button(text=__error_location_settings__[self.__lang], commands=[OpenLink(ref="prefs:root=LOCATION_SERVICES")])
-                    
+
                     # wrap it up in a adds view
                     self.send_object(AddViews(self.refId, views=[view1, view2, button]))
                     self.complete_request()
                     # we should definitivly kill the running plugin
                     raise StopPluginExecution("Could not get necessary location information")
-                else: 
+                else:
                     return self.location
             elif response['class'] == 'SetRequestOriginFailed':
                 self.logger.warning('THIS IS NOT YET IMPLEMENTED, PLEASE PROVIDE SITUATION WHERE THIS HAPPEND')
                 raise Exception()
-     
+
     def send_object(self, obj):
         self.connection.plugin_lastAceId = obj.aceId
         self.__send_object(obj)
-    
+
     def send_plist(self, plist):
         self.connection.plugin_lastAceId = plist['aceId']
         self.__send_plist(plist)
@@ -178,7 +178,7 @@ class Plugin(threading.Thread):
         self.waitForResponse.wait()
         self.waitForResponse = None
         return self.response
-    
+
     def sendRequestWithoutAnswer(self, clientBoundCommand):
         if isinstance(clientBoundCommand, ClientBoundCommand):
             self.send_object(clientBoundCommand)
@@ -191,7 +191,7 @@ class Plugin(threading.Thread):
             speakableText = text
         view.views += [AssistantUtteranceView(text, speakableText)]
         self.send_object(view)
-        
+
     def user_name(self):
         if self.assistant.nickName!='':
             self.user_name=self.assistant.nickName.decode("utf-8")

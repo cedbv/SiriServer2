@@ -24,8 +24,8 @@ import uuid
 class SiriProtocolHandler(Siri):
     __not_recognized =  {"de-DE": u"Entschuldigung, ich verstehe \"{0}\" nicht.", "en-US": u"Sorry I don't understand {0}", "fr-FR": u"Désolé je ne comprends pas ce que \"{0}\" veut dire."}
     __websearch =  {"de-DE": u"Websuche", "en-US": u"Websearch", "fr-FR": u"Rechercher sur le Web"}
-    
-    
+
+
     def __init__(self, server, peer):
         Siri.__init__(self, server, peer)
         self.lastPing = 0
@@ -38,7 +38,7 @@ class SiriProtocolHandler(Siri):
         self.httpClient = AsyncOpenHttp(self.handle_google_data)
         self.current_google_request = None
         self.current_location = None
-    
+
     def handle_google_data(self, body, requestId, dictation):
         self.current_google_request = None
         if (body != None):
@@ -47,12 +47,12 @@ class SiriProtocolHandler(Siri):
         else:
             self.send_object(SpeechFailure(requestId, "No connection to Google possible"))
             self.send_object(RequestCompleted(requestId))
-        
+
     def received_ping(self, numOfPing):
         self.pong += 1
         self.lastPing = numOfPing
         self.send_pong(self.pong)
-        
+
     def process_recognized_speech(self, googleJson, requestId, dictation):
         possible_matches = googleJson['hypotheses']
         if len(possible_matches) > 0:
@@ -66,7 +66,7 @@ class SiriProtocolHandler(Siri):
             phrase = Phrase(lowConfidence=False, interpretations=[interpretation])
             recognition = Recognition([phrase])
             recognized = SpeechRecognized(requestId, recognition)
-            
+
             if not dictation:
                 if self.current_running_plugin == None:
                     plugin = PluginManager.getPluginForImmediateExecution(self.assistant.assistantId, best_match, self.assistant.language, (self.send_object, self.send_plist, self.assistant, self.current_location))
@@ -100,25 +100,25 @@ class SiriProtocolHandler(Siri):
             else:
                 self.send_object(recognized)
                 self.send_object(RequestCompleted(requestId))
-    
+
     def received_plist(self, plist):
         self.logger.debug("Packet with class: {0}".format(plist['class']))
         self.logger.debug("packet with content:\n{0}".format(pprint.pformat(plist, width=40)))
-        
+
         # first handle speech stuff
-        
+
         if 'refId' in plist:
             # if the following holds, this packet is an answer to a request by a plugin
             if plist['refId'] == self.plugin_lastAceId and self.current_running_plugin != None:
                 if self.current_running_plugin.waitForResponse != None:
-                    # just forward the object to the 
+                    # just forward the object to the
                     # don't change it's refId, further requests must reference last FinishSpeech
                     self.logger.debug("Forwarding object to plugin")
                     self.plugin_lastAceId = None
                     self.current_running_plugin.response = plist if plist['class'] != "StartRequest" else plist['properties']['utterance']
                     self.current_running_plugin.waitForResponse.set()
                     return
-        
+
         if ObjectIsCommand(plist, StartSpeechRequest) or ObjectIsCommand(plist, StartSpeechDictation):
             self.logger.debug("New start of speech received")
             startSpeech = None
@@ -128,7 +128,7 @@ class SiriProtocolHandler(Siri):
             else:
                 dictation = False
                 startSpeech = StartSpeechRequest(plist)
-    
+
             decoder = speex.Decoder()
             encoder = flac.Encoder()
             speexUsed = False
@@ -151,9 +151,9 @@ class SiriProtocolHandler(Siri):
             elif startSpeech.coded == StartSpeech.CodecPCM_Mono_16Bit_32000HzValue:
                 encoder.initialize(32000, 1, 16)
             # we probably need resampling for sample rates other than 16kHz...
-            
+
             self.speech[startSpeech.aceId] = (decoder if speexUsed else None, encoder, dictation)
-        
+
         elif ObjectIsCommand(plist, SpeechPacket):
             self.logger.debug("Decoding speech packet")
             speechPacket = SpeechPacket(plist)
@@ -163,10 +163,10 @@ class SiriProtocolHandler(Siri):
             else:
                 pcm = SpeechPacket.data # <- probably data... if pcm
             encoder.encode(pcm)
-                
+
         elif plist['class'] == 'StartCorrectedSpeechRequest':
             self.process_recognized_speech({u'hypotheses': [{'confidence': 1.0, 'utterance': plist['properties']['utterance']}]}, plist['aceId'], False)
-    
+
         elif ObjectIsCommand(plist, FinishSpeech):
             self.logger.debug("End of speech received")
             finishSpeech = FinishSpeech(plist)
@@ -177,13 +177,13 @@ class SiriProtocolHandler(Siri):
             flacBin = encoder.getBinary()
             encoder.destroy()
             del self.speech[finishSpeech.refId]
-            
+
             self.logger.info("Sending flac to google for recognition")
             try:
                 self.current_google_request = self.httpClient.make_google_request(flacBin, finishSpeech.refId, dictation, language=self.assistant.language, allowCurses=True)
             except AttributeError, TypeError:
                 self.logger.warning("Unable to find language record for this assistant. Try turning Siri off and then back on.")
-                
+
         elif ObjectIsCommand(plist, CancelRequest):
                 # this is probably called when we need to kill a plugin
                 # wait for thread to finish a send
@@ -211,17 +211,17 @@ class SiriProtocolHandler(Siri):
             self.send_object(fail)
 
             #self.send_plist({"class":"SessionValidationFailed", "properties":{"errorCode":"UnsupportedHardwareVersion"}, "aceId": str(uuid.uuid4()), "refId":plist['aceId'], "group":"com.apple.ace.system"})
-            
+
         elif plist['class'] == 'CreateAssistant':
             #create a new assistant
-            helper = Assistant()     
-            helper.assistantId=str.upper(str(uuid.uuid4())) 
+            helper = Assistant()
+            helper.assistantId=str.upper(str(uuid.uuid4()))
             c = self.dbConnection.cursor()
             noError = True
             try:
                 c.execute("insert into assistants(assistantId, assistant) values (?,?)", (helper.assistantId, helper))
                 self.dbConnection.commit()
-            except sqlite3.Error: 
+            except sqlite3.Error:
                 noError = False
             c.close()
             if noError:
@@ -229,26 +229,31 @@ class SiriProtocolHandler(Siri):
                 self.send_plist({"class": "AssistantCreated", "properties": {"speechId": str(uuid.uuid4()), "assistantId": helper.assistantId}, "group":"com.apple.ace.system", "callbacks":[], "aceId": str(uuid.uuid4()), "refId": plist['aceId']})
             else:
                 self.send_plist({"class":"CommandFailed", "properties": {"reason":"Database error", "errorCode":2, "callbacks":[]}, "aceId": str(uuid.uuid4()), "refId": plist['aceId'], "group":"com.apple.ace.system"})
-            
+
         elif plist['class'] == 'SetAssistantData':
-            # fill assistant 
+            # fill assistant
             if self.assistant != None:
                 try:
                     c = self.dbConnection.cursor()
-                    objProperties = plist['properties'] 
+                    objProperties = plist['properties']
                     self.assistant.censorSpeech = objProperties['censorSpeech']
                     self.assistant.timeZoneId = objProperties['timeZoneId']
                     self.assistant.language = objProperties['language']
                     self.assistant.region = objProperties['region']
-                    #Record the user firstName and nickName                    
-                    try:                        
+                    #Record the user firstName and nickName
+                    try:
                         self.assistant.firstName=objProperties["meCards"][0]["properties"]["firstName"].encode("utf-8")
                     except KeyError:
-                        self.assistant.firstName=u''                        
-                    try:                        
-                        self.assistant.nickName=objProperties["meCards"][0]["properties"]["nickName"].encode("utf-8")       
+                        self.assistant.firstName=u''
+                    try:
+                        self.assistant.nickName=objProperties["meCards"][0]["properties"]["nickName"].encode("utf-8")
                     except KeyError:
                         self.assistant.nickName=u''
+                    try:
+                        self.assistant.accountIdentifier = objProperties["abSources"][0]["properties"]["accountIdentifier"]
+                    except KeyError:
+                        self.assistant.accountIdentifier = ""
+
                     #Done recording
                     c.execute("update assistants set assistant = ? where assistantId = ?", (self.assistant, self.assistant.assistantId))
                     self.dbConnection.commit()
@@ -267,21 +272,21 @@ class SiriProtocolHandler(Siri):
                 result = c.fetchone()
                 if result == None:
                     self.send_plist({"class": "AssistantNotFound", "aceId":str(uuid.uuid4()), "refId":plist['aceId'], "group":"com.apple.ace.system"})
-                    self.logger.warning("Assistant not found in database!!")                        
+                    self.logger.warning("Assistant not found in database!!")
                 else:
                     self.assistant = result[0]
                     if self.assistant.language=='' or self.assistant.language==None:
-                        self.logger.error ("No language is set for this assistant")                        
+                        self.logger.error ("No language is set for this assistant")
                         c.execute("delete from assistants where assistantId = ?", (plist['properties']['assistantId'],))
                         self.dbConnection.commit()
                         self.send_plist({"class":"CommandFailed", "properties": {"reason":"Database error Assistant not found or language settings ", "errorCode":2, "callbacks":[]}, "aceId": str(uuid.uuid4()), "refId": plist['aceId'], "group":"com.apple.ace.system"})
-                    else:                        
+                    else:
                         self.send_plist({"class": "AssistantLoaded", "properties": {"version": "20111216-32234-branches/telluride?cnxn=293552c2-8e11-4920-9131-5f5651ce244e", "requestSync":False, "dataAnchor":"removed"}, "aceId":str(uuid.uuid4()), "refId":plist['aceId'], "group":"com.apple.ace.system"})
                 c.close()
             except:
                 self.send_plist({"class": "AssistantNotFound", "aceId":str(uuid.uuid4()), "refId":plist['aceId'], "group":"com.apple.ace.system"})
                 self.logger.warning("Database error on fetching assistant")
-                
+
         elif plist['class'] == 'DestroyAssistant':
             try:
                 c = self.dbConnection.cursor()
@@ -292,7 +297,7 @@ class SiriProtocolHandler(Siri):
             except:
                 self.send_plist({"class": "AssistantNotFound", "aceId":str(uuid.uuid4()), "refId":plist['aceId'], "group":"com.apple.ace.system"})
                 self.logger.error("Database error on deleting assistant")
-                
+
         elif plist['class'] == 'StartRequest':
             #this should also be handeled by special plugins, so lets call the plugin handling stuff
             self.process_recognized_speech({'hypotheses': [{'utterance': plist['properties']['utterance'], 'confidence': 1.0}]}, plist['aceId'], False)
