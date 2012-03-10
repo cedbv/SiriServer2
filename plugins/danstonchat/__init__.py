@@ -11,7 +11,13 @@ from plugin import *
 
 class dansTonChat(Plugin):
 
-    fichier = open(os.path.dirname(__file__)+"/danstonchat-fortunes","r")
+    fortunesfile = os.path.dirname(os.path.abspath(__file__))+"/fortunes"
+    # Download fortunes during the first use
+    if os.path.exists(fortunesfile) != True:
+        execfile(os.path.dirname(os.path.abspath(__file__))+"/update.py")
+
+    # Load all fortunes only one time.
+    fichier = open(fortunesfile,"r")
     fortunes = ""
     for ligne in fichier:
         fortunes += ligne

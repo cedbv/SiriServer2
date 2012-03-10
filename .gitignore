@@ -9,3 +9,4 @@ plugins.conf
 ca.pem
 server.crt
 server.key
+fortunes*
