@@ -4,6 +4,9 @@
 # apiName="APIKEY"
 
 wolframalpha = ""
-wordnik = ""
 wundergrounds = ""
+bingtranslation = ""
+googleplaces = ""
 
+webaddons_path = "/var/www/SiriServer"
+webaddons_url = "http://127.0.0.1/SiriServer"
