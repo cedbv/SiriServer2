@@ -11,8 +11,9 @@ from plugin import *
 
 
 class vieDeMerde(Plugin):
-    
+
     @register("fr-FR", ".*vie.*(merde|merd).*|.*vdm.*")
+    @register("fr-FR", ".*fuck.*my.*(life|live).*|.*fml.*")
     def fuckMyLife(self, speech, language):
         vdm = None
         lang = language[:2]
@@ -27,10 +28,18 @@ class vieDeMerde(Plugin):
         if vdm != None:
             self.say(vdm.find("text").text)
             url = vdm.find("short_url").text.replace("//","")
-            button = Button(text=u"Lire sur VDM", commands=[OpenLink(ref=url)])
+
+            if language == "fr-FR":
+                button_txt = "Lire sur VDM"
+            else:
+                button_txt = "Read on FML"
+
+            button = Button(text=button_txt, commands=[OpenLink(ref=url)])
             self.send_object(AddViews(self.refId, views=[button]))
         else:
             if language == "fr-FR":
                 self.say(u"Désolé, aujourd'hui est une journée tellement merdique que je n'arrive même pas à lire VDM.")
-            
+            else:
+                self.say("I can't read FMyLife. FML")
+
         self.complete_request()
