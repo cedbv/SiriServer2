@@ -7,17 +7,17 @@
 import re
 import xml.etree.ElementTree as ET
 import urllib2, urllib
-import locale 
+import locale
 import time
 import random
 
 from plugin import *
 
-class lotto(Plugin):   
-        
+class lottoBelgium(Plugin):
+
     @register("fr-FR", u".*(loto|lotto|euromillion).*")
     def lotto(self, speech, language, regex):
-                
+
         typetirage = regex.group(regex.lastindex).strip().lower()
         print typetirage
         if typetirage == "loto" or typetirage == "lotto":
@@ -26,7 +26,7 @@ class lotto(Plugin):
                 self.say(u"Attention, seuls les résultats du lotto belge sont disponibles.")
         else:
             typetirage = "euromillions"
-        
+
         ns = "{http://www."+typetirage+".be/soap2/}"
         date_tirage = None
         result = ""
@@ -44,11 +44,11 @@ class lotto(Plugin):
                 result_say += c.text + ", "
         except:
             pass
-        
+
         if result != "":
             self.say(u"Tirage {0} du {1} : ".format(typetirage,date_tirage))
             self.say(result,result_say)
         else:
             self.say(u"Désolé, je n'arrive pas à récupérer les résultats.")
 
-        self.complete_request()     
+        self.complete_request()
