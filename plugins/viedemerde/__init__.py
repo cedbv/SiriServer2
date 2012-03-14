@@ -1,7 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+# Random VDM or FML
 # Use iPhone App API
+# By Cédric Boverie (cedbv)
 
 import re
 import xml.etree.ElementTree as ET
@@ -13,7 +15,7 @@ from plugin import *
 class vieDeMerde(Plugin):
 
     @register("fr-FR", ".*vie.*(merde|merd).*|.*vdm.*")
-    @register("fr-FR", ".*fuck.*my.*(life|live).*|.*fml.*")
+    @register("en-US", ".*fuck.*my.*(life|live).*|.*fml.*")
     def fuckMyLife(self, speech, language):
         vdm = None
         lang = language[:2]
