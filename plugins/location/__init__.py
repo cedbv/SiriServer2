@@ -15,6 +15,14 @@ from siriObjects.localsearchObjects import Business, MapItem, MapItemSnippet, Ra
 
 APIKEY = APIKeyForAPI("googleplaces")
 
+try:
+    TOMTOM_APIKEY = APIKeyForAPI("tomtom")
+except:
+    TOMTOM_APIKEY = ""
+# Get an API Key here:
+# http://www.tomtom.com/addto/one-address-wizard.php
+# (Check in the generated html code)
+
 class location(Plugin):
 
     res = {
@@ -213,6 +221,17 @@ class location(Plugin):
                 mapsnippet = MapItemSnippet(items=[MapItem(label=city, latitude=str(location['lat']),longitude=str(location['lng']), detailType="ADDRESS_ITEM")])
                 view.views = [AssistantUtteranceView(speakableText=the_header, dialogIdentifier="Map"), mapsnippet]
                 self.sendRequestWithoutAnswer(view)
+
+                if TOMTOM_APIKEY != "":
+                    if language == "fr-FR":
+                        button_txt = u"Ouvrir dans TomTom"
+                    else:
+                        button_txt = "Open in TomTom"
+
+                    url = u"http://addto.tomtom.com/api/home/v2/georeference?action=add&apikey={0}&latitude={1}&longitude={2}&name={3}".format(TOMTOM_APIKEY, str(location['lat']), str(location['lng']), urllib.quote_plus(the_header.encode("utf-8")))
+                    button = Button(text=button_txt, commands=[OpenLink(ref=url.replace('//',''))])
+                    self.send_object(AddViews(self.refId, views=[button]))
+
             else:
                 self.say(self.res["google_useless"][language])
         else:
