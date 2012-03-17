@@ -1,7 +1,6 @@
 from siriObjects.baseObjects import ClientBoundCommand, AceObject, ServerBoundCommand
-from siriObjects.systemObjects import DomainObject, Location, Person as SuperPerson, RelatedName as SuperRelatedName, Phone as SuperPhone
+from siriObjects.systemObjects import DomainObject, Location, Person as SuperPerson, RelatedName as SuperRelatedName, Phone as SuperPhone, Email as SuperEmail
 from siriObjects.uiObjects import Snippet
-from siriObjects.emailObjects import Email as SuperEmail
 
 class Address(Location):
     def __init__(self, label="", street="", city="", stateCode="", countryCode="", postalCode="", latitude=0, longitude=0, accuracy=0):
@@ -71,7 +70,7 @@ class PersonSearch(ClientBoundCommand):
 class PersonSearchCompleted(ServerBoundCommand):
     classIdentifier = "PersonSearchCompleted"
     groupIdentifier = "com.apple.ace.contact"
-    
+
     def __init__(self, plist):
         self.results = None #array
         super(PersonSearchCompleted, self).__init__(plist)
@@ -90,14 +89,14 @@ class PersonSnippet(Snippet):
 class Phone(SuperPhone):
     def __init__(self):
         super(Phone, self).__init__(group="com.apple.ace.contact")
-    
+
     def to_plist(self):
         return super(Phone, self).to_plist()
 
 class RelatedName(SuperRelatedName):
     def __init__(self):
         super(RelatedName, self).__init__(group="com.apple.ace.contact")
-    
+
     def to_plist(self):
         return super(RelatedName, self).to_plist()
 
