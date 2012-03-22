@@ -6,6 +6,8 @@ import random
 from plugin import *
 from siriObjects.websearchObjects import WebSearch
 
+from siriObjects.contactObjects import PersonSearch, PersonSnippet
+
 class frenchtalk(Plugin):
 
     @register("fr-FR", u"(.*J'ai.*faim.*)|(J'ai.*soif.*)")
@@ -23,6 +25,18 @@ class frenchtalk(Plugin):
     def ft_quisuisje(self, speech, language):
         rep = [u"Tu es {0}, mais tu le savais déjà.", u"Vous êtes {0}. C'est en tout cas ce que vous m'avez dit.", u"Vous êtes {0}. N'est ce pas ?"]
         self.say(random.choice(rep).format(self.user_name()))
+
+        person_search = PersonSearch(self.refId)
+        person_search.scope = PersonSearch.ScopeLocalValue
+        person_search.me = "true"
+        person_return = self.getResponseForRequest(person_search)
+        if person_return["properties"]["results"] != None:
+            person_ = person_return["properties"]["results"]
+            mecard = PersonSnippet(persons=person_)
+            view = AddViews(self.refId, dialogPhase="Completion")
+            view.views = [mecard]
+            self.sendRequestWithoutAnswer(view)
+
         self.complete_request()
 
 
