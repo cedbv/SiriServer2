@@ -55,9 +55,19 @@ class SiriProtocolHandler(Siri):
             self.timeoutschedule.cancel()
         except:
             pass
+        if self.current_google_request != None:
+                self.current_google_request.cancel()
+        #ensure all decoder/encoder attemps are closed
+        for key in self.speech.keys():
+            (decoder, encoder, _) = self.speech[key]
+            if decoder:
+                decoder.destroy()
+            if encoder:
+                encoder.finish()
+                encoder.destroy()
+        del self.speech
         self.current_running_plugin = None
         self.dbConnection = None
-        self.speech = None
         self.httpClient = None
         Siri.connectionLost(self, reason)
 
@@ -230,6 +240,12 @@ class SiriProtocolHandler(Siri):
             self.logger.debug("Should cancel current request")
             cancelRequest = CancelRequest(plist)
             if cancelRequest.refId in self.speech:
+                (decoder, encoder, dictation) = self.speech[cancelRequest.refId]
+                if decoder:
+                    decoder.destroy()
+                if encoder:
+                    encoder.finish()
+                    encoder.destory()
                 del self.speech[cancelRequest.refId]
             if self.current_google_request != None:
                 self.current_google_request.cancel()
