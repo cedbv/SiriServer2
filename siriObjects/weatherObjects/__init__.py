@@ -1,10 +1,11 @@
 from siriObjects.baseObjects import AceObject, ClientBoundCommand, \
     ServerBoundCommand
 from siriObjects.systemObjects import Location, DomainObject
-from siriObjects.uiObjects import Snippet
+from siriObjects.uiObjects import UISnippet
 
 
 class WeatherBarometricPressure(AceObject):
+    TrendSteadyValue = "Steady"
     TrendRisingValue = "Rising"
     TrendFallingValue = "Falling"
     def __init__(self):
@@ -67,6 +68,57 @@ class WeatherCondition(AceObject):
     ConditionCodeSnowShowersValue = "SnowShowers"
     ConditionCodeIsolatedThundershowersValue = "IsolatedThundershowers"
     ConditionCodeNotAvailableValue = "NotAvailable"
+    
+    ConditionCodeIndexTable = { 0: ConditionCodeTornadoValue,
+                                1: ConditionCodeTropical_StormValue,
+                                2: ConditionCodeHurricaneValue,
+                                3: ConditionCodeSevere_ThunderstormsValue,
+                                4: ConditionCodeThunderstormsValue,
+                                5: ConditionCodeMixedRainAndSnowValue,
+                                6: ConditionCodeMixedRainAndSleetValue,
+                                7: ConditionCodeMixedSnowAndSleetValue,
+                                8: ConditionCodeFreezingDrizzleValue,
+                                9: ConditionCodeDrizzleValue,
+                                10: ConditionCodeFreezingRainValue,
+                                11: ConditionCodeShowersValue,
+                                12: ConditionCodeShowers2Value,
+                                13: ConditionCodeSnowFlurriesValue,
+                                14: ConditionCodeLightSnowShowersValue,
+                                15: ConditionCodeBlowingSnowValue,
+                                16: ConditionCodeSnowValue,
+                                17: ConditionCodeHailValue,
+                                18: ConditionCodeSleetValue,
+                                19: ConditionCodeDustValue,
+                                20: ConditionCodeFoggyValue,
+                                21: ConditionCodeHazeValue,
+                                22: ConditionCodeSmokyValue,
+                                23: ConditionCodeBlusteryValue,
+                                24: ConditionCodeWindyValue,
+                                25: ConditionCodeColdValue,
+                                26: ConditionCodeCloudyValue,
+                                27: ConditionCodeMostlyCloudyNightValue,
+                                28: ConditionCodeMostlyCloudyDayValue,
+                                29: ConditionCodePartlyCloudyNightValue,
+                                30: ConditionCodePartlyCloudyDayValue,
+                                31: ConditionCodeClearNightValue,
+                                32: ConditionCodeSunnyValue,
+                                33: ConditionCodeFairNightValue,
+                                34: ConditionCodeFairDayValue,
+                                35: ConditionCodeMixedRainAndHailValue,
+                                36: ConditionCodeHotValue,
+                                37: ConditionCodeIsolatedThunderstormsValue,
+                                38: ConditionCodeScatteredThunderstormsValue,
+                                39: ConditionCodeScatteredThunderstorms2Value,
+                                40: ConditionCodeScatteredShowersValue,
+                                41: ConditionCodeHeavySnowValue,
+                                42: ConditionCodeScatteredSnowShowersValue,
+                                43: ConditionCodeHeavySnow2Value,
+                                44: ConditionCodePartlyCloudyValue,
+                                45: ConditionCodeThundershowersValue,
+                                46: ConditionCodeSnowShowersValue,
+                                47: ConditionCodeIsolatedThundershowersValue,
+                                3200: ConditionCodeNotAvailableValue
+                            }
     def __init__(self):
         super(WeatherCondition, self).__init__("Condition", "com.apple.ace.weather")
         self.conditionCode = None # @"NSString"
@@ -154,9 +206,9 @@ class WeatherDailyForecast(WeatherForecast):
         self.add_property('lowTemperature')
         return super(WeatherDailyForecast, self).to_plist()
 
-class WeatherForecastSnippet(Snippet):
+class WeatherForecastSnippet(UISnippet):
     def __init__(self):
-        super(WeatherForecastSnippet, self).__init__("com.apple.ace.weather", clazz="ForecastSnippet")
+        super(WeatherForecastSnippet, self).__init__("ForecastSnippet", "com.apple.ace.weather")
         self.aceWeathers = None # @"NSArray"
 
     def to_plist(self):
@@ -187,7 +239,6 @@ class WeatherLocationAdd(ClientBoundCommand):
         self.targetAppId = None # @"NSURL"
         self.weatherLocation = None # @"WeatherLocation"
 
-
     def to_plist(self):
         self.add_property('targetAppId')
         self.add_property('weatherLocation')
@@ -209,7 +260,6 @@ class WeatherLocationDelete(ClientBoundCommand):
         super(WeatherLocationDelete, self).__init__("LocationDelete", "com.apple.ace.weather", None, refId)
         self.targetAppId = None # @"NSURL"
         self.weatherLocation = None # @"WeatherLocation"
-
 
     def to_plist(self):
         self.add_property('targetAppId')
@@ -244,9 +294,9 @@ class WeatherLocationSearchCompleted(ServerBoundCommand):
         self.weatherLocations = None # @"NSArray"
         super(WeatherLocationSearchCompleted, self).__init__(plist)
 
-class WeatherLocationSnippet(Snippet):
+class WeatherLocationSnippet(UISnippet):
     def __init__(self):
-        super(WeatherLocationSnippet, self).__init__("com.apple.ace.weather", clazz="LocationSnippet")
+        super(WeatherLocationSnippet, self).__init__("LocationSnippet", "com.apple.ace.weather")
         self.weatherLocations = None # @"NSArray"
 
     def to_plist(self):

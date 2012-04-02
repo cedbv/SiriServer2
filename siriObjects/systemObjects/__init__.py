@@ -2,6 +2,19 @@ from siriObjects.baseObjects import ClientBoundCommand, AceObject, ServerBoundCo
 
 import biplist, struct
 
+class AceView(AceObject):
+    def __init__(self, clazz="AceView", group="com.apple.ace.system"):
+        super(AceView, self).__init__(clazz, group)
+        self.listenAfterSpeaking = None # @"NSNumber"
+        self.speakableText = None # @"NSString"
+        self.viewId = None # @"NSString"
+
+    def to_plist(self):
+        self.add_property('listenAfterSpeaking')
+        self.add_property('speakableText')
+        self.add_property('viewId')
+        return super(AceView, self).to_plist()
+
 class GetRequestOrigin(ClientBoundCommand):
     desiredAccuracyThreeKilometers = "ThreeKilometers"
     desiredAccuracyKilometer = "Kilometer"
@@ -248,7 +261,7 @@ class PersonAttribute(AceObject):
         return super(PersonAttribute, self).to_plist()
 
 class Phone(AceObject):
-    def __init__(self, number="", label="", favoriteVoice=0, favoriteFacetime=0, group="com.apple.ace.system"):
+    def __init__(self, number=None, label=None, favoriteVoice=None, favoriteFacetime=None, group="com.apple.ace.system"):
         super(Phone, self).__init__("Phone", group)
         self.number = number
         self.label = label
@@ -264,7 +277,7 @@ class Phone(AceObject):
 
 
 class RelatedName(AceObject):
-    def __init__(self, name="", label="", group="com.apple.ace.system"):
+    def __init__(self, name=None, label=None, group="com.apple.ace.system"):
         super(RelatedName, self).__init__("RelatedName", group)
         self.name = name
         self.label = label
@@ -344,7 +357,7 @@ class Location(DomainObject):
     AccuracyHundredMetersValue = "HundredMeters"
     AccuracyKilometerValue = "Kilometer"
     AccuracyThreeKilometersValue = "ThreeKilometers"
-    def __init__(self, label="", street="", city="", stateCode="", countryCode="", postalCode="", latitude=0, longitude=0, accuracy=0, group="com.apple.ace.system", clazz="Location"):
+    def __init__(self, label=None, street=None, city=None, stateCode=None, countryCode=None, postalCode=None, latitude=None, longitude=None, accuracy=None, group="com.apple.ace.system", clazz="Location"):
         super(Location, self).__init__(group, None, clazz)
         self.label = label
         self.street = street
@@ -381,4 +394,19 @@ class Email(AceObject):
         self.add_property('favoriteFacetime')
         self.add_property('emailAddress')
         return super(Email, self).to_plist()
+    
+    
+class RollbackRequest(ServerBoundCommand):
+        classIdentifier = "RollbackRequest"
+        groupIdentifier = "com.apple.ace.system"
+        def __init__(self, plist):
+            self.requestId = None # @"NSString"
+            super(RollbackRequest, self).__init__(plist)
+
+class RollbackSucceeded(ClientBoundCommand):
+        def __init__(self, refId):
+            super(RollbackSucceeded, self).__init__("RollbackSucceeded", "com.apple.ace.system", None, refId)
+    
+        def to_plist(self):
+            return super(RollbackSucceeded, self).to_plist()
 

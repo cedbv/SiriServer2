@@ -11,8 +11,8 @@ from siriObjects.speechObjects import Phrase, Recognition, SpeechRecognized, \
     StartSpeechDictation, FinishSpeech, SpeechPacket
 from siriObjects.systemObjects import StartRequest, SendCommands, CancelRequest, \
     CancelSucceeded, GetSessionCertificate, GetSessionCertificateResponse, \
-    CreateSessionInfoRequest, CommandFailed
-from siriObjects.uiObjects import AddViews, AssistantUtteranceView, Button
+    CreateSessionInfoRequest, CommandFailed, RollbackRequest
+from siriObjects.uiObjects import UIAddViews, UIAssistantUtteranceView, UIButton
 import PluginManager
 import flac
 import json
@@ -20,8 +20,8 @@ import pprint
 import speex
 import sqlite3
 import time
-import uuid
 import twisted
+import uuid
 
 
 
@@ -82,6 +82,13 @@ class SiriProtocolHandler(Siri):
         self.current_google_request = None
         if (body != None):
             googleAnswer = json.loads(body)
+            for i in xrange(0,len(googleAnswer['hypotheses'])-1):
+                utterance = googleAnswer['hypotheses'][i]['utterance']
+                if len(utterance) == 1:
+                    utterance = utterance.upper()
+                else:
+                    utterance = utterance[0].upper() + utterance[1:]
+                googleAnswer['hypotheses'][i]['utterance'] = utterance
             self.process_recognized_speech(googleAnswer, requestId, dictation)
         else:
             self.send_object(SpeechFailure(requestId, "No connection to Google possible"))
@@ -97,10 +104,6 @@ class SiriProtocolHandler(Siri):
         possible_matches = googleJson['hypotheses']
         if len(possible_matches) > 0:
             best_match = possible_matches[0]['utterance']
-            if len(best_match) == 1:
-                best_match = best_match.upper()
-            else:
-                best_match = best_match[0].upper() + best_match[1:]
             best_match_confidence = possible_matches[0]['confidence']
             self.logger.info(u"Best matching result: \"{0}\" with a confidence of {1}%".format(best_match, round(float(best_match_confidence) * 100, 2)))
             # construct a SpeechRecognized
@@ -121,11 +124,15 @@ class SiriProtocolHandler(Siri):
                         self.current_running_plugin.start()
                     else:
                         self.send_object(recognized)
-                        view = AddViews(requestId)
+                        view = UIAddViews(requestId)
                         errorText = SiriProtocolHandler.__not_recognized[self.assistant.language] if self.assistant.language in SiriProtocolHandler.__not_recognized else SiriProtocolHandler.__not_recognized["en-US"]
-                        view.views += [AssistantUtteranceView(errorText.format(best_match), errorText.format(best_match))]
+                        errorView = UIAssistantUtteranceView()
+                        errorView.text = errorText.format(best_match)
+                        errorView.speakableText = errorText.format(best_match)
+                        view.views = [errorView]
                         websearchText = SiriProtocolHandler.__websearch[self.assistant.language] if self.assistant.language in SiriProtocolHandler.__websearch else SiriProtocolHandler.__websearch["en-US"]
-                        button = Button(text=websearchText)
+                        button = UIButton()
+                        button.text = websearchText
                         cmd = SendCommands()
                         cmd.commands = [StartRequest(utterance=u"^webSearchQuery^=^{0}^^webSearchConfirmation^=^Yes^".format(best_match))]
                         button.commands = [cmd]
@@ -221,16 +228,20 @@ class SiriProtocolHandler(Siri):
                 (decoder, encoder, dictation) = self.speech[finishSpeech.refId]
                 if decoder:
                     decoder.destroy()
-                encoder.finish()
-                flacBin = encoder.getBinary()
-                encoder.destroy()
+                flacBin = None
+                if encoder:
+                    encoder.finish()
+                    flacBin = encoder.getBinary()
+                    encoder.destroy()
                 del self.speech[finishSpeech.refId]
-
-                self.logger.info("Sending flac to google for recognition")
-                try:
-                    self.current_google_request = self.httpClient.make_google_request(flacBin, finishSpeech.refId, dictation, language=self.assistant.language, allowCurses=True)
-                except (AttributeError, TypeError):
-                    self.logger.warning("Unable to find language record for this assistant. Try turning Siri off and then back on.")
+                if flacBin != None:
+                    self.logger.info("Sending flac to google for recognition")
+                    try:
+                        self.current_google_request = self.httpClient.make_google_request(flacBin, finishSpeech.refId, dictation, language=self.assistant.language, allowCurses=True)
+                    except (AttributeError, TypeError):
+                        self.logger.warning("Unable to find language record for this assistant. Try turning Siri off and then back on.")
+                else:
+                    self.logger.info("There was no speech")
             else:
                 self.logger.debug("Got a finish speech packet that did not match any current request")
 
@@ -254,13 +265,16 @@ class SiriProtocolHandler(Siri):
                     if self.current_running_plugin.waitForResponse != None:
                         self.current_running_plugin._abortPluginRun()
                         self.current_running_plugin.waitForResponse.set()
-                        
-            # if a plugin is running (processing, but not waiting for data from the device we kill it)   
+
+            # if a plugin is running (processing, but not waiting for data from the device we kill it)
             if self.current_running_plugin != None:
                 if self.current_running_plugin.waitForResponse == None:
-                    self.current_running_plugin._abortPluginRun()     
-            
+                    self.current_running_plugin._abortPluginRun()
+
             self.send_object(CancelSucceeded(cancelRequest.aceId))
+
+        elif ObjectIsCommand(plist, RollbackRequest):
+            pass
 
         elif ObjectIsCommand(plist, GetSessionCertificate):
             getSessionCertificate = GetSessionCertificate(plist)
