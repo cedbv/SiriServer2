@@ -190,7 +190,7 @@ class mail(Plugin):
         return root
 
     @register("en-US", u"(email)* (?P<recipient>[\w ]+) *about* (?P<subject>[\w ]+)")
-    @register("fr-FR", u"(envoy(er|ez|é) un email (a|à))* (?P<recipient>[\w ]+) *au sujet de* (?P<subject>[\w ]+)")
+    @register("fr-FR", u"(envoy(er|ez|é) un .?mail (a|à))* (?P<recipient>[\w ]+) *au sujet de* (?P<subject>[\w ]+)")
     def mail(self, speech, language, regex):
         personToCall = regex.group('recipient')
         subject = regex.group('subject')
