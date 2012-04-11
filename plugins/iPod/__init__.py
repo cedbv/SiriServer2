@@ -275,7 +275,7 @@ class iPod(Plugin):
 
     @register("de-DE", "stop")
     @register("en-US", "stop")
-    @register("fr-FR", "(stop|arr(e|ê)t(é|er|ez)).*")
+    @register("fr-FR", u"(stop|arr(e|ê)t(é|er|ez)|arr(ê|e)t).*")
     def stopMusic(self, speech, language, regex):
         self.stop(language)
         self.complete_request()
