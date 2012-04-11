@@ -5,7 +5,11 @@
 # Do not add the .py ending here
 
 weather
+#yahooWeather
 notes
+reminders
+sendMail
+readMail
 alarm
 timer
 time
@@ -17,6 +21,7 @@ belgiumLotto
 belgiumRailtime
 frenchHoroscope
 phonecalls
+shortMessage
 location
 frenchDanstonchat
 viedemerde
@@ -32,4 +37,3 @@ smalltalk
 serverinfo
 startRequestHandler
 wolfram
-chatbot
