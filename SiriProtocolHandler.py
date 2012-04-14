@@ -25,8 +25,6 @@ import time
 import twisted
 import uuid
 
-
-
 class SiriProtocolHandler(Siri):
 
     __not_recognized = {"de-DE": u"Entschuldigung, ich verstehe \"{0}\" nicht.", "en-US": u"Sorry I don't understand {0}", "fr-FR": u"Désolé je ne comprends pas ce que \"{0}\" veut dire."}
@@ -337,10 +335,11 @@ class SiriProtocolHandler(Siri):
                         self.assistant.nickName = self.assistant.meCards[0].nickName.encode("utf-8")
                     except:
                         self.assistant.nickName = u''
+
                     try:
-                        self.assistant.accountIdentifier = objProperties["abSources"][0]["properties"]["accountIdentifier"]
-                    except KeyError:
-                        self.assistant.accountIdentifier = ""
+                        self.assistant.accountIdentifier = self.assistant.abSources[0].accountIdentifier.encode("utf-8")
+                    except:
+                        self.assistant.accountIdentifier = u''
 
                     #Done recording
                     c.execute("update assistants set assistant = ? where assistantId = ?", (self.assistant, self.assistant.assistantId))
