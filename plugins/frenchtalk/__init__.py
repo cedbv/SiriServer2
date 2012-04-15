@@ -191,8 +191,18 @@ class frenchtalk(Plugin):
     @register("fr-FR", u".*(iphone|ipad|ipod|itouch|imac|ibook|ibidule|macbook|mac book|apple).*")
     def ft_iphone(self, speech, language):
         self.say(u"Tout ce que vous devez savoir sur les produits Apple se trouve sur le site web d'Apple...");
-        button = Button(text=u"Aller sur Apple.com/fr", commands=[OpenLink(ref="http://www.apple.com/fr")])
-        self.send_object(AddViews(self.refId, views=[button]))
+
+        openLink = UIOpenLink(self.refId)
+        openLink.ref = "http:www.apple.com/fr"
+
+        button = UIButton()
+        button.text = u"Aller sur Apple.com/fr"
+        button.commands = [openLink]
+
+        addviews = UIAddViews(self.refId)
+        addviews.views = [button]
+        addviews.dialogPhase = addviews.DialogPhaseClarificationValue
+        self.send_object(addviews)
         self.complete_request()
 
     @register("fr-FR", u".*(Bon(ne) ann(é|e)e|Joyeux No(e|ë)l).*")
