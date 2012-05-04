@@ -26,9 +26,9 @@ import twisted
 import uuid
 
 class SiriProtocolHandler(Siri):
+    __not_recognized = {"de-DE": u"Entschuldigung, ich verstehe \"{0}\" nicht.", "en-US": u"Sorry I don't understand {0}", "fr-FR": u"Désolé je ne comprends pas ce que \"{0}\" veut dire.", "nl-NL": u"Excuses, \"{0}\" versta ik niet."}
+    __websearch = {"de-DE": u"Websuche", "en-US": u"Websearch", "fr-FR": u"Rechercher sur le Web", "nl-NL": u"Zoeken op het web"}
 
-    __not_recognized = {"de-DE": u"Entschuldigung, ich verstehe \"{0}\" nicht.", "en-US": u"Sorry I don't understand {0}", "fr-FR": u"Désolé je ne comprends pas ce que \"{0}\" veut dire."}
-    __websearch = {"de-DE": u"Websuche", "en-US": u"Websearch", "fr-FR": u"Rechercher sur le Web"}
     __scheduling_interval_timeout__ = 20
     __timeout_delay = 10
 
@@ -256,7 +256,7 @@ class SiriProtocolHandler(Siri):
                     decoder.destroy()
                 if encoder:
                     encoder.finish()
-                    encoder.destory()
+                    encoder.destroy()
                 del self.speech[cancelRequest.refId]
             if self.current_google_request != None:
                 self.current_google_request.cancel()

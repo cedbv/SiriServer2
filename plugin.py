@@ -19,14 +19,41 @@ import urllib2
 
 __criteria_key__ = "criterias"
 
+__error_responses__ = {
+    "de-DE": "Es ist ein Fehler in der Verarbeitung ihrer Anfrage aufgetreten!",
+    "en-US": "There was an error during the processing of your request!",
+    "en-GB": "There was an error during the processing of your request!",
+    "en-AU": "There was an error during the processing of your request!",
+    "fr-FR": "Il y a eu une erreur lors du traitement de votre demande !",
+    "nl-NL": u"Er is een fout opgetreden tijdens de verwerking van uw aanvraag!",
+}
 
-__error_responses__ = {"de-DE": "Es ist ein Fehler in der Verarbeitung ihrer Anfrage aufgetreten!", "en-US": "There was an error during the processing of your request!", "en-GB": "There was an error during the processing of your request!", "en-AU": "There was an error during the processing of your request!", "fr-FR": "Il y a eu une erreur lors du traitement de votre demande !"}
+__error_location_help__ = {
+    "de-DE": u"Ich weiß nicht wo du bist… Aber du kannst mir helfen es heraus zu finden…",
+    "en-US": u"I don’t know where you are… But you can help me find out…",
+    "en-GB": u"I don’t know where you are… But you can help me find out…",
+    "en-AU": u"I don’t know where you are… But you can help me find out…",
+    "fr-FR": u"Je ne sais pas où vous êtes ... Mais vous pouvez m'aider à en savoir plus sur ...",
+    "nl-NL": u"Ik weet niet waar je bent… Maar je kunt me helpen erachter te komen…",
+}
 
-__error_location_help__ = {"de-DE": u"Ich weiß nicht wo du bist… Aber du kannst mir helfen es heraus zu finden…", "en-US": u"I don’t know where you are… But you can help me find out…", "en-GB": u"I don’t know where you are… But you can help me find out…", "en-AU": u"I don’t know where you are… But you can help me find out…", "fr-FR": u"Je ne sais pas où vous êtes ... Mais vous pouvez m'aider à en savoir plus sur ..."}
+__error_location_saysettings__ = {
+    "de-DE": u"In den Ortungsdienst Einstellungen, schalte Ortungsdienst und Siri ein.",
+    "en-US": u"In Location Services Settings, turn on both Location Services and Siri.",
+    "en-GB": u"In Location Services Settings, turn on both Location Services and Siri.",
+    "en-AU": u"In Location Services Settings, turn on both Location Services and Siri.",
+    "fr-FR": u"Dans les paramètres de service de localisation, activez les services de localisation et Siri.",
+    "nl-NL": u"In locatievoorzieningen instellingen, zet locatievoorzieningen en Siri aan."
+}
 
-__error_location_saysettings__ = {"de-DE": u"In den Ortungsdienst Einstellungen, schalte Ortungsdienst und Siri ein.", "en-US": u"In Location Services Settings, turn on both Location Services and Siri.", "en-GB": u"In Location Services Settings, turn on both Location Services and Siri.", "en-AU": u"In Location Services Settings, turn on both Location Services and Siri.", "fr-FR": u"Dans les paramètres de service de localisation, activez les services de localisation et Siri."}
-
-__error_location_settings__ = {"de-DE": u"Ortungsdienst Einstellungen", "en-US": u"Location Services Settings", "en-GB": u"Location Services Settings", "en-AU": u"Location Services Settings", "fr-FR": u"Services de localisation"}
+__error_location_settings__ = {
+    "de-DE": u"Ortungsdienst Einstellungen",
+    "en-US": u"Location Services Settings",
+    "en-GB": u"Location Services Settings",
+    "en-AU": u"Location Services Settings",
+    "fr-FR": u"Services de localisation",
+    "nl-NL": u"Locatievoorzieningen Instellingen",
+}
 
 
 
@@ -106,7 +133,8 @@ class Plugin(threading.Thread):
         self.assistant = assistant
         self.location = location
         self.__shouldCancel = False
-
+        self.__priority = False
+        
     def _abortPluginRun(self):
         self.__shouldCancel = True
 
@@ -169,14 +197,12 @@ class Plugin(threading.Thread):
 
                     #We need to say something
                     view1 = UIAssistantUtteranceView()
-                    view1.text=__error_location_help__[self.__lang]
-                    view1.speakableText=__error_location_help__[self.__lang]
+                    view1.text = view1.speakableText = __error_location_help__[self.__lang] if self.__lang in __error_location_help__ else __error_location_help__['en-US']
                     view1.dialogIdentifier="Common#assistantLocationServicesDisabled"
 
                     #lets create another which has tells him to open settings
                     view2 = UIAssistantUtteranceView()
-                    view2.text=__error_location_saysettings__[self.__lang]
-                    view2.speakableText=__error_location_saysettings__[self.__lang]
+                    view2.text = view2.speakableText = __error_location_saysettings__[self.__lang] if self.__lang in __error_location_saysettings__ else __error_location_saysettings__['en-US']
                     view2.dialogIdentifier="Common#assistantLocationServicesDisabled"
 
                     #create a link
@@ -185,7 +211,7 @@ class Plugin(threading.Thread):
 
                     # create a button which opens the location tab in the settings if clicked on it
                     button = UIButton()
-                    button.text=__error_location_settings__[self.__lang]
+                    button.text = __error_location_settings__[self.__lang] if self.__lang in __error_location_settings__ else __error_location_settings__['en-US']
                     button.commands = [link]
 
                     # wrap it up in a adds view
