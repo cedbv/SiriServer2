@@ -88,7 +88,14 @@ class Twitter(Plugin):
         else:
             self.say(self.res["not_ready"][language])
             url = webaddons_url+"/twitter.php?id=" + self.assistant.accountIdentifier
-            button = Button(text=u"Connectez-vous sur Twitter", commands=[OpenLink(ref=url.replace("//",""))])
-            self.send_object(AddViews(self.refId, views=[button]))
 
+            view = UIAddViews(self.refId)
+            button = UIButton()
+            button.text = u"Connectez-vous sur Twitter"
+            link = UIOpenLink("")
+            link.ref = url.replace("//","")
+            button.commands = [link]
+            view.views = [button]
+            self.send_object(view)
+            
         self.complete_request()
