@@ -25,18 +25,6 @@ class frenchtalk(Plugin):
     def ft_quisuisje(self, speech, language):
         rep = [u"Tu es {0}, mais tu le savais déjà.", u"Vous êtes {0}. C'est en tout cas ce que vous m'avez dit.", u"Vous êtes {0}. N'est ce pas ?"]
         self.say(random.choice(rep).format(self.user_name()))
-
-        person_search = PersonSearch(self.refId)
-        person_search.scope = PersonSearch.ScopeLocalValue
-        person_search.me = "true"
-        person_return = self.getResponseForRequest(person_search)
-        if person_return["properties"]["results"] != None:
-            person_ = person_return["properties"]["results"]
-            mecard = PersonSnippet(persons=person_)
-            view = AddViews(self.refId, dialogPhase="Completion")
-            view.views = [mecard]
-            self.sendRequestWithoutAnswer(view)
-
         self.complete_request()
 
 
@@ -191,18 +179,16 @@ class frenchtalk(Plugin):
     @register("fr-FR", u".*(iphone|ipad|ipod|itouch|imac|ibook|ibidule|macbook|mac book|apple).*")
     def ft_iphone(self, speech, language):
         self.say(u"Tout ce que vous devez savoir sur les produits Apple se trouve sur le site web d'Apple...");
-
-        openLink = UIOpenLink(self.refId)
-        openLink.ref = "http:www.apple.com/fr"
-
+        
+        view = UIAddViews(self.refId)
         button = UIButton()
         button.text = u"Aller sur Apple.com/fr"
-        button.commands = [openLink]
-
-        addviews = UIAddViews(self.refId)
-        addviews.views = [button]
-        addviews.dialogPhase = addviews.DialogPhaseClarificationValue
-        self.send_object(addviews)
+        link = UIOpenLink("")
+        link.ref = "http:www.apple.com/fr"
+        button.commands = [link]
+        view.views = [button]
+        self.send_object(view)
+        
         self.complete_request()
 
     @register("fr-FR", u".*(Bon(ne) ann(é|e)e|Joyeux No(e|ë)l).*")
